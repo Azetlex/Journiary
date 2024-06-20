@@ -1,0 +1,18 @@
+{% extends "journal/base.html" %}
+
+{% block content %}
+    <form id="deleteForm" method="post">{% csrf_token %}
+        <p>
+            Are you sure you want to delete <em>"{{ entry.title }}"</em><br>
+            created on {{ entry.date_created|date:'Y-m-d' }}?
+        </p>
+        <input type="submit" value="Confirm">
+    </form>
+    <button type="button" id="cancelButton" class="btn btn-secondary">Cancel</button> <!-- Use type="button" to prevent form submission -->
+    
+    <script>
+        document.getElementById('cancelButton').addEventListener('click', function() {
+            window.location.href = "{% url 'entry_detail' entry.id %}";
+        });
+    </script>
+{% endblock %}

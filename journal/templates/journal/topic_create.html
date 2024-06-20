@@ -1,0 +1,21 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}Create New Topic{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h3>Create New Topic</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}  
+            <button type="button" id="cancelButton" class="btn btn-secondary">Cancel</button>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('cancelButton').addEventListener('click', function() {
+            window.location.href = "{% url 'index' %}";
+        });
+    </script>
+{% endblock %}

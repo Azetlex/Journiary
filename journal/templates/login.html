@@ -1,0 +1,35 @@
+{% extends "base2.html" %}
+
+{% load static %}
+
+{% block content %}
+  <div class="login-form-container">
+    <div class="login-form">
+      <h3>Login</h3>
+
+      {% if error %}
+        <p class="error-message">{{ error }}</p>
+      {% endif %}
+
+      <form method="post" action="{% url 'login' %}" id="loginForm">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn">Login</button>
+        <button type="button" class="btn" id="signupButton">Sign Up</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('signupButton').addEventListener('click', function() {
+      window.location.href = "{% url 'signup' %}";
+    });
+  </script>
+{% endblock %}

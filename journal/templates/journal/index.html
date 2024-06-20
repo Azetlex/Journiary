@@ -1,0 +1,155 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}Journal App - All Topics{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h3 style="color: #2c3e50;">All Topics</h3>
+        <div class="buttons">
+            <a href="{% url 'topic_create' %}"><button class="btn btn-primary">Add new Topic</button></a>
+            <button type="button" id="deleteTopicButton" class="btn btn-danger">Delete Topic</button>
+        </div>
+    </div>
+
+
+    <div id="deleteTopicModal" class="modal">
+        <div class="modal-content">
+            <h3>Select a topic to delete:</h3>
+            <form method="post" action="{% url 'topic_delete' %}">
+                {% csrf_token %}
+                <select name="topic_id" class="form-select">
+                    {% for topic in topics %}
+                        <option value="{{ topic.id }}">{{ topic.title }}</option>
+                    {% endfor %}
+                </select>
+                <br><br>
+                <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                <button type="button" id="cancelDeleteButton" class="btn btn-secondary">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="filter-controls">
+        <button id="toggleFiltersButton" class="btn btn-primary">Toggle Filters</button>
+        <div id="filters" style="display: none;">
+            <div class="date-filter">
+                <form method="get" action="{% url 'topic_list' %}" class="form-inline">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </form>
+            </div>
+            <br>
+            <div class="entry-search-box">
+                <form id="entrySearchForm" class="form-inline">
+                    <input type="text" id="entry_search_query" class="form-control" placeholder="Search entries by title...">
+                    <button type="button" class="btn btn-primary" id="entrySearchButton">Search</button>
+                    <button type="button" class="btn btn-primary" id="nextMatchButton" style="display:none;">Next Match</button>
+                </form>
+            </div>
+            <div id="searchResultsInfo" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <div class="topics-list">
+        {% for topic in topics %}
+            <div class="topic-item" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h3><a href="{% url 'topic_detail' topic.id %}">{{ topic.title }}</a></h3>
+                </div>
+                <div>
+                    <p class="topic-date">{{ topic.created_at|date:"F j, Y, g:i a" }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    var matchedIndices = [];
+    var currentIndex = 0;
+
+    document.getElementById('toggleFiltersButton').addEventListener('click', function() {
+        var filters = document.getElementById('filters');
+        filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.getElementById('deleteTopicButton').addEventListener('click', function() {
+        document.getElementById('deleteTopicModal').style.display = 'block';
+    });
+
+    document.getElementById('cancelDeleteButton').addEventListener('click', function() {
+        document.getElementById('deleteTopicModal').style.display = 'none';
+    });
+
+    document.getElementById('entry_search_query').addEventListener('input', function() {
+        var query = this.value.trim().toLowerCase();
+        var topics = document.querySelectorAll('.topic-item');
+        var count = 0;
+
+        matchedIndices = [];
+
+        topics.forEach(function(topic, index) {
+            var titleElement = topic.querySelector('h3 a');
+            var title = titleElement.textContent.trim().toLowerCase();
+
+            if (title.includes(query)) {
+                count++;
+                matchedIndices.push(index);
+                var startIndex = title.indexOf(query);
+                var endIndex = startIndex + query.length;
+                var highlightedTitle = title.substring(0, startIndex) + '<span class="highlight">' + title.substring(startIndex, endIndex) + '</span>' + title.substring(endIndex);
+                titleElement.innerHTML = highlightedTitle;
+            } else {
+                titleElement.innerHTML = title;
+            }
+        });
+
+        currentIndex = 0;
+        updateSearchResultsInfo();
+    });
+
+    document.getElementById('entrySearchButton').addEventListener('click', function() {
+        currentIndex = 0;
+        updateSearchResultsInfo();
+    });
+
+    document.getElementById('nextMatchButton').addEventListener('click', function() {
+        if (matchedIndices.length === 0) return;
+
+        currentIndex = (currentIndex + 1) % matchedIndices.length;
+        var topics = document.querySelectorAll('.topic-item');
+        topics.forEach(function(topic) {
+            var titleElement = topic.querySelector('h3 a');
+            titleElement.innerHTML = titleElement.textContent;
+        });
+        var titleElement = topics[matchedIndices[currentIndex]].querySelector('h3 a');
+        titleElement.innerHTML = highlightMatch(titleElement.textContent.trim().toLowerCase(), document.getElementById('entry_search_query').value.trim().toLowerCase());
+        updateSearchResultsInfo();
+        topics[matchedIndices[currentIndex]].scrollIntoView({ behavior: 'smooth' });
+    });
+
+    function updateSearchResultsInfo() {
+        var totalCount = matchedIndices.length;
+        var currentIndexDisplay = matchedIndices.length > 0 ? currentIndex + 1 : 0;
+        document.getElementById('searchResultsInfo').innerHTML = totalCount > 0 ? currentIndexDisplay + '/' + totalCount + ' entries found.' : 'No entries found.';
+        document.getElementById('nextMatchButton').style.display = totalCount > 1 ? 'inline-block' : 'none';
+    }
+
+    function highlightMatch(title, query) {
+        var startIndex = title.indexOf(query);
+        var endIndex = startIndex + query.length;
+        return title.substring(0, startIndex) + '<span class="highlight">' + title.substring(startIndex, endIndex) + '</span>' + title.substring(endIndex);
+    }
+</script>
+
+<style>
+    .highlight {
+        background-color: yellow;
+    }
+</style>
+
+{% endblock %}

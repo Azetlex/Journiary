@@ -1,0 +1,37 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}Create New Entry{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h3>Create New Entry</h3>
+
+        <form method="post" action="{% url 'entry_create' topic.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="topic_id" value="{{ topic.id }}">
+            <div class="mb-3">
+                <label for="entryTitle" class="form-label">Title:</label>
+                <input type="text" class="form-control" id="entryTitle" name="title" required>
+            </div>
+            <div class="mb-3">
+                <label for="entryContent" class="form-label">Content:</label>
+                <textarea class="form-control" id="entryContent" name="content" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="entryEmotion" class="form-label">Emotion:</label>
+                <select class="form-select" id="entryEmotion" name="emotion" required>
+                    <option value="Happy">Happy</option>
+                    <option value="Trust">Trust</option>
+                    <option value="Surprise">Surprise</option>
+                    <option value="Anticipation">Anticipation</option>
+                    <option value="Angry">Angry</option>
+                    <option value="Fear">Fear</option>
+                    <option value="Sad">Sad</option>
+                    <option value="Disgust">Disgust</option>
+                    <option value="Contempt">Contempt</option>                                             
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">Submit</button>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,15 @@
+<!-- entry_statistics.html -->
+
+{% extends 'journal/base.html' %}
+
+{% block title %}Entry Statistics{% endblock %}
+
+{% block content %}
+    <h2>Emotion Distribution in Entries</h2>
+    
+    {% if chart_image_path %}
+        <img src="{{ chart_image_path }}" alt="Pie Chart">
+    {% else %}
+        <p>No data available to generate the chart.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}Journal App - Edit Entry{% endblock %}
+
+{% block content %}
+    <div class="container mt-4"> 
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0" style="font-weight: normal;">Edit Entry</h3> 
+            </div>
+            <div class="card-body">
+                <form id="editEntryForm" method="post">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label for="title" class="form-label">Title:</label>
+                        <input type="text" id="title" name="title" value="{{ entry.title }}" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="content" class="form-label">Content:</label>
+                        <textarea id="content" name="content" rows="5" class="form-control" required>{{ entry.content }}</textarea>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="entryEmotion" class="form-label">Emotion:</label>
+                        <select class="form-select" id="entryEmotion" name="emotion" required>
+                            <option value="Happy" {% if entry.emotion == 'Happy' %}selected{% endif %}>Happy</option>
+                            <option value="Trust" {% if entry.emotion == 'Trust' %}selected{% endif %}>Trust</option>
+                            <option value="Surprise" {% if entry.emotion == 'Surprise' %}selected{% endif %}>Surprise</option>
+                            <option value="Anticipation" {% if entry.emotion == 'Anticipation' %}selected{% endif %}>Anticipation</option>
+                            <option value="Angry" {% if entry.emotion == 'Angry' %}selected{% endif %}>Angry</option>
+                            <option value="Fear" {% if entry.emotion == 'Fear' %}selected{% endif %}>Fear</option>
+                            <option value="Sad" {% if entry.emotion == 'Sad' %}selected{% endif %}>Sad</option>
+                            <option value="Disgust" {% if entry.emotion == 'Disgust' %}selected{% endif %}>Disgust</option>
+                            <option value="Contempt" {% if entry.emotion == 'Contempt' %}selected{% endif %}>Contempt</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="button" id="cancelButton" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-success">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('cancelButton').addEventListener('click', function() {
+            if (confirm('Are you sure you want to cancel?')) {
+                window.location.href = "{% url 'entry_detail' entry.id %}";
+            }
+        });
+    </script>
+{% endblock %}

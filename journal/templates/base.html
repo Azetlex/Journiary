@@ -1,0 +1,229 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Diary{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/diary.css' %}">
+ <style>
+    body {
+        display: flex;
+        min-height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f0f2f5;
+    }
+    .sidebar {
+        width: 250px;
+        background: #2c3e50;
+        color: #ecf0f1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 20px;
+    }
+    .sidebar h1 {
+        font-size: 1.5em;
+        margin: 0 0 20px;
+    }
+    .sidebar a {
+        color: #ecf0f1;
+        text-decoration: none;
+        padding: 10px 0;
+        display: block;
+    }
+    .sidebar a:hover {
+        background: #34495e;
+    }
+    .content {
+        flex-grow: 1;
+        padding: 20px;
+        background: #ecf0f1;
+    }
+    .footer {
+        padding: 20px;
+        background: #2c3e50;
+        color: #ecf0f1;
+        text-align: center;
+    }
+    .button-container {
+        display: flex;
+        gap: 10px;
+    }
+    button {
+        padding: 10px 15px;
+        border: none;
+        cursor: pointer;
+    }
+    .btn-primary {
+        background: #3498db;
+        color: white;
+    }
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+    .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .header h2 {
+        margin: 0;
+    }
+    .buttons {
+        display: flex;
+        gap: 10px;
+    }
+    .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+    .topics-list, .entries-list {
+        margin-top: 20px;
+    }
+    .topic-item, .entry-item {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    .topic-item h3, .entry-item h3 {
+        margin: 0;
+        font-size: 18px;
+    }
+    .topic-item a, .entry-item a {
+        text-decoration: none;
+        color: #007bff;
+    }
+    .topic-item a:hover, .entry-item a:hover {
+        text-decoration: underline;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        max-width: 400px;
+        margin: auto;
+    }
+    .form-select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+    }
+    .entry-number {
+        display: inline-block;
+        font-weight: bold;
+        margin-right: 5px;
+    }
+    .entry-title {
+        display: inline-block;
+    }
+    
+    /* styles.css */
+.login-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+}
+
+.login-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.error-message {
+  color: red;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="password"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}
+</style>
+
+</head>
+<body>
+    <div class="sidebar">
+        <h1><a href="/">Journiary</a></h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="{% url 'topic_create' %}">Add New Topic</a>
+        </nav>
+        <div>
+		<a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <div class="content">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="message">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+    <div class="footer">
+        &copy; 2024 Journiary. All rights reserved.
+    </div>
+</body>
+</html>

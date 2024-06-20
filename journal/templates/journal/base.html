@@ -1,0 +1,452 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Diary{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/diary.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'images/favicon.png' %}" type="image/png">
+
+      <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+        }
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+        }
+        .sidebar h1 a {
+            font-family: 'Great Vibes', cursive;
+            font-size: 36px;
+            color: #ecf0f1;
+            text-decoration: none;
+            margin-left: -10px; /* Adjust this value to move the title to the left */
+        }
+        .sidebar h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .sidebar nav a {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 10px 0;
+            display: block;
+        }
+        .sidebar nav a:hover {
+            background: #34495e;
+        }
+        .content-wrapper {
+            display: flex;
+            flex-grow: 1;
+            margin-left: 250px; /* Adjusted to leave space for left sidebar */
+            margin-right: 250px; /* Adjusted to leave space for right sidebar */
+        }
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+            background: #ecf0f1;
+            margin-left: 250px; /* This accounts for the width of the fixed sidebar */
+            font-size: 14px;
+        }
+        .footer {
+            padding: 20px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            text-align: center;
+            font-size: 14px;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            font-size: 14px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        .topics-list, .entries-list {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .topic-item, .entry-item {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .topic-item h3, .entry-item h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+        .topic-item a, .entry-item a {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 14px;
+        }
+        .topic-item a:hover, .entry-item a:hover {
+            text-decoration: underline;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 400px;
+            margin: auto;
+            font-size: 14px;
+        }
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .entry-number {
+            display: inline-block;
+            font-weight: bold;
+            margin-right: 5px;
+            font-size: 14px;
+        }
+        .entry-title {
+            display: inline-block;
+            font-size: 14px;
+        }
+        .login-form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-size: 14px;
+        }
+        .login-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input[type="text"],
+        input[type="password"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .signup-form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-size: 14px;
+        }
+        .signup-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn {
+            color: white; /* Text color */
+            background-color: #2c3e50; /* Background color */
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background-color: #34495e; /* Darker shade for hover */
+        }
+        .btn-primary {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #34495e;
+        }
+        .btn-danger {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #34495e;
+        }
+        .btn-secondary {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #34495e;
+        }
+        .topic-item a {
+            color: #2c3e50; /* Entry title color */
+            font-size: 14px;
+        }
+        .topic-item a:hover {
+            text-decoration: underline; /* Optional: underline on hover */
+        }
+        .entry-title a {
+            color: #2c3e50; /* Entry title color */
+            font-size: 14px;
+        }
+        .entry-title a:hover {
+            text-decoration: underline; /* Optional: underline on hover */
+        }
+        .highlight {
+            background-color: yellow;
+            font-size: 14px;
+        }
+    
+        .footer .social-icons {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .footer .social-icons a {
+            color: #ecf0f1;
+            margin: 0 10px;
+            text-decoration: none;
+            font-size: 24px;
+        }
+        .footer .contact-info {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .form-select option {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            font-size: 1rem; /* Adjust the font size as needed */
+        }
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            font-size: 1rem; /* Ensure consistent font size */
+            color: #333;
+        }
+        .form-select option {
+            padding: 10px;
+        }
+        .form-select option:hover {
+            background-color: #f0f0f0;
+        }
+        body, select, option {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+         .filter-controls {
+        position: fixed;
+        top: 20px;
+        left: 240px;
+        z-index: 2; /* Ensure it stays on top of other content */
+    }
+
+    #filters {
+        position: absolute;
+        top: 50px;
+        left: 20px;
+        background: #fff;
+        padding: 10px;
+        border: 1px solid #ccc;
+        z-index: 1;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 80px auto 20px; /* Adjusted margin to account for the filter button */
+        padding: 20px;
+        font-size: 14px;
+        position: relative; /* Ensures relative positioning for the filters */
+    }
+
+    .content-wrapper {
+        display: flex;
+        flex-grow: 1;
+        margin-left: 250px; /* Adjusted to leave space for left sidebar */
+        margin-right: 250px; /* Adjusted to leave space for right sidebar */
+        position: relative; /* Ensures relative positioning for the filter button */
+    }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1><a href="/">Journiary</a></h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="{% url 'topic_create' %}">Add New Topic</a>
+        </nav>
+        <div>
+            <a href="{% url 'login' %}">Logout</a>
+        </div>
+    </div>
+
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="footer">
+        &copy; 2024 Journiary. All rights reserved.
+        <div class="social-icons">
+            <a href="https://www.facebook.com" target="_blank" aria-label="Facebook">
+                <i class="fab fa-facebook"></i>
+            </a>
+            <a href="https://www.instagram.com" target="_blank" aria-label="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://www.tiktok.com" target="_blank" aria-label="TikTok">
+                <i class="fab fa-tiktok"></i>
+            </a>
+        </div>
+        <h4>Contact</h4>
+        <div class="contact-info">
+            Phone: 0722334455<br>
+            E-mail: <a href="mailto:alexandru.zberea@student.upt.ro" style="color: #ecf0f1;">alexandru.zberea@student.upt.ro</a>
+        </div>
+    </div>
+</body>
+</html>

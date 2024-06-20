@@ -1,0 +1,61 @@
+<!-- signup.html -->
+{% extends "base2.html" %}
+
+{% load static %}
+
+{% block content %}
+  <div class="signup-form-container">
+    <div class="signup-form">
+      <h3>Sign Up</h3>
+
+      {% if error %}
+        <p class="error-message">{{ error }}</p>
+      {% endif %}
+
+      <form method="post" id="signupForm">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="password1">Password:</label>
+          <input type="password" id="password1" name="password1" required>
+          <small>Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.</small>
+        </div>
+        <div class="form-group">
+          <label for="password2">Confirm Password:</label>
+          <input type="password" id="password2" name="password2" required>
+        </div>
+        <button type="submit" class="btn">Sign Up</button>
+      </form>
+      <p id="passwordError" class="error-message" style="display: none;"></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('signupForm').addEventListener('submit', function(event) {
+      const password1 = document.getElementById('password1').value;
+      const password2 = document.getElementById('password2').value;
+      const passwordError = document.getElementById('passwordError');
+      const passwordPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+      if (!passwordPattern.test(password1)) {
+        event.preventDefault();
+        passwordError.textContent = 'Password does not meet the criteria.';
+        passwordError.style.display = 'block';
+      } else if (password1 !== password2) {
+        event.preventDefault();
+        passwordError.textContent = 'Passwords do not match.';
+        passwordError.style.display = 'block';
+      } else {
+        passwordError.style.display = 'none';
+      }
+    });
+    
+  </script>
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}Journal App - Current Topic{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h3>Current Topic - {{ topic.title }}</h3>
+        <div class="buttons">
+            <a href="{% url 'entry_create' topic_id=topic.id %}"><button class="btn btn-primary">Add new Entry</button></a>
+            <button type="button" id="deleteEntryButton" class="btn btn-danger">Delete Entry</button>
+        </div>
+    </div>
+
+    <div id="deleteEntryModal" class="modal">
+        <div class="modal-content">
+            <h3>Select an entry to delete:</h3>
+            <form method="post" action="{% url 'entry_delete' %}">
+                {% csrf_token %}
+                <select name="entry_id" class="form-select">
+                    {% for entry in entries %}
+                        <option value="{{ entry.id }}">{{ entry.title }}</option>
+                    {% endfor %}
+                </select>
+                <br><br>
+                <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                <button type="button" id="cancelDeleteButton" class="btn btn-secondary">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="filter-controls">
+        <button id="toggleFiltersButton" class="btn btn-primary">Toggle Filters</button>
+        <div id="filters" style="display: none;">
+            <div class="date-filter">
+                <form method="get" action="{% url 'topic_list' %}" class="form-inline">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </form>
+            </div>
+            <br>
+            <div class="entry-search-box">
+                <form id="entrySearchForm" class="form-inline">
+                    <input type="text" id="entry_search_query" class="form-control" placeholder="Search entries by title...">
+                    <button type="button" class="btn btn-primary" id="entrySearchButton">Search</button>
+                    <button type="button" class="btn btn-primary" id="nextMatchButton" style="display:none;">Next Match</button>
+                </form>
+            </div>
+            <div id="searchResultsInfo" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    {% if entries %}
+        <div class="entries-list">
+            {% for entry in entries %}
+                <div class="entry-item" style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h3 class="entry-number">{{ forloop.counter }}. </h3>
+                        <h3 class="entry-title">
+                            <a href="{% url 'entry_detail' entry.id %}">
+                                {{ entry.title }}
+                            </a>
+                        </h3>
+                    </div>
+                    <div>
+                        <p class="entry-date">{{ entry.created_at|date:"F j, Y, g:i a" }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No entries found.</p>
+    {% endif %}
+
+    <div style="position: relative; width: 500px; height: 500px; margin-top: 20px;">
+        <canvas id="emotionPieChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const emotion_counts = JSON.parse('{{ emotion_counts|escapejs }}');
+        console.log(emotion_counts);
+
+        if (Object.keys(emotion_counts).length === 0) {
+            console.error("Emotion counts are empty");
+            return;
+        }
+
+        const labels = Object.keys(emotion_counts);
+        const data = Object.values(emotion_counts);
+
+        const ctx = document.getElementById('emotionPieChart').getContext('2d');
+        const emotionPieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Emotion Distribution',
+                    data: data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Emotion Distribution'
+                    }
+                }
+            }
+        });
+    });
+
+    document.getElementById('deleteEntryButton').addEventListener('click', function() {
+        document.getElementById('deleteEntryModal').style.display = 'block';
+    });
+
+    document.getElementById('cancelDeleteButton').addEventListener('click', function() {
+        document.getElementById('deleteEntryModal').style.display = 'none';
+    });
+
+    document.getElementById('toggleFiltersButton').addEventListener('click', function() {
+        var filters = document.getElementById('filters');
+        filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+    });
+
+    var matchedIndices = [];
+    var currentIndex = 0;
+
+    document.getElementById('entry_search_query').addEventListener('input', function() {
+        var query = this.value.toLowerCase();
+        var entries = document.querySelectorAll('.entry-item');
+        matchedIndices = [];
+        currentIndex = 0;
+
+        entries.forEach(function(entry, index) {
+            var titleElement = entry.querySelector('.entry-title a');
+            var title = titleElement.textContent.trim().toLowerCase();
+
+            if (title.includes(query)) {
+                matchedIndices.push(index);
+                highlightText(titleElement, title, query);
+            } else {
+                titleElement.innerHTML = title;
+            }
+        });
+
+        updateSearchResultsInfo();
+    });
+
+    document.getElementById('nextMatchButton').addEventListener('click', function() {
+        if (matchedIndices.length === 0) return;
+
+        var entries = document.querySelectorAll('.entry-item');
+        var previousIndex = matchedIndices[currentIndex];
+        var previousElement = entries[previousIndex].querySelector('.entry-title a');
+        removeHighlight(previousElement);
+
+        currentIndex = (currentIndex + 1) % matchedIndices.length;
+
+        var currentElement = entries[matchedIndices[currentIndex]].querySelector('.entry-title a');
+        highlightText(currentElement, currentElement.textContent.toLowerCase(), document.getElementById('entry_search_query').value.toLowerCase());
+        updateSearchResultsInfo();
+
+        entries[matchedIndices[currentIndex]].scrollIntoView({ behavior: 'smooth' });
+    });
+
+    function highlightText(element, text, query) {
+        var startIndex = text.indexOf(query);
+        var endIndex = startIndex + query.length;
+        element.innerHTML = text.substring(0, startIndex) + '<span class="highlight">' + text.substring(startIndex, endIndex) + '</span>' + text.substring(endIndex);
+    }
+
+    function removeHighlight(element) {
+        element.innerHTML = element.textContent;
+    }
+
+    function updateSearchResultsInfo() {
+        var totalCount = matchedIndices.length;
+        var currentIndexDisplay = totalCount > 0 ? currentIndex + 1 : 0;
+        document.getElementById('searchResultsInfo').innerHTML = totalCount > 0 ? currentIndexDisplay + '/' + totalCount + ' entries found.' : 'No entries found.';
+        document.getElementById('nextMatchButton').style.display = totalCount > 1 ? 'inline-block' : 'none';
+    }
+</script>
+
+<style>
+    .highlight {
+        background-color: yellow;
+    }
+</style>
+
+{% endblock %}
